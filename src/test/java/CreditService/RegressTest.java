@@ -41,6 +41,7 @@ public class RegressTest {
     @ParameterizedTest
     @CsvSource({"2, 1, 'Пользователь не найден'", "1, 4, 'Тариф не найден'"})
     @Description("Параметризированный тест оформления заявки для несуществующего пользователя и существующего тарифа, затем для существующего пользователя и не существующего тарифа")
+    @DisplayName("Параметризированный тест оформления заявки для несуществующего пользователя и существующего тарифа, затем для существующего пользователя и не существующего тарифа")
     public void testCreateOrderForInvalidUserAndTariff(Integer userId, Integer tariffId, String errorMessage) {
         authenticateBody.put("email", "ivanov@mail.ru");
         authenticateBody.put("password", "1234");
@@ -54,7 +55,7 @@ public class RegressTest {
         CreateOrderResponse createOrderResponse = new CreateOrderResponse(createOrder);
         expectedStatusCode = 400;
         checkMethods.checkStatusCode(expectedStatusCode, createOrderResponse.getActualStatusCode());
-        checkMethods.checkText(createOrderResponse.getErrorMessageText(), errorMessage);
+        checkMethods.checkText(errorMessage, createOrderResponse.getErrorMessageText());
     }
 
     @ParameterizedTest
@@ -73,6 +74,6 @@ public class RegressTest {
         OrderStatusResponse orderStatusResponse = new OrderStatusResponse(getStatus);
         expectedStatusCode = 400;
         checkMethods.checkStatusCode(expectedStatusCode, orderStatusResponse.getActualStatusCode());
-        checkMethods.checkText(orderStatusResponse.getErrorMessageText(), errorMessage);
+        checkMethods.checkText( errorMessage, orderStatusResponse.getErrorMessageText());
     }
 }

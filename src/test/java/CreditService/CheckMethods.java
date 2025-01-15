@@ -28,8 +28,13 @@ public class CheckMethods {
         }
     }
 
-    @Step("Убедиться, что поле {field} содержит текст: {text}")
-    public void checkText(String field, String text) {
-        assertTrue(field.contains(text), "Поле не содержит ожидаемого текста");
+    @Step("Убедиться, что в списке содержится {expectedLen} объектов")
+    public  void  checkLenObjects(int expectedLen, int actualLen) {
+        assertEquals(expectedLen, actualLen);
+    }
+
+    @Step("Убедиться, что поле {field} содержит текст: {expectedText}")
+    public void checkText(String expectedText, String actualText) {
+        assertEquals(expectedText, actualText);
     }
 }

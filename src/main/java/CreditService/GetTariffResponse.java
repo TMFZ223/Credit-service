@@ -32,4 +32,10 @@ public class GetTariffResponse {
         // Преобразовать в список
         return new ArrayList<>(allKeys);
     }
+
+    // Получение длины списка тарифов
+    public  int getTariffsObjectSize() {
+        List<Map<String, Object>> tariffs = response.jsonPath().getList("data.tariffs");
+        return  tariffs.size();
+    }
 }

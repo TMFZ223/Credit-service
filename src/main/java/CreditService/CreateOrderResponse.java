@@ -42,35 +42,6 @@ public class CreateOrderResponse {
         return orderId;
     }
 
-    @Step("Записать идентификатор заявки в файл для последующего использования в тесте")
-    public void writeOrderIdToFile() {
-        String orderIdValue = getOrderId();
-        File file = new File("orderId.txt");
-
-        // Определяем, сколько строк в текущем файле
-        long lineCount = 0;
-        if (file.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                lineCount = reader.lines().count();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Если в файле уже 3 или более строк — перезаписываем
-        // Иначе — дописываем в конец
-        boolean appendMode = lineCount < 3;
-
-        // автоматизация с помощью try-with-resources закрытия ресурсов
-        try (FileWriter writer = new FileWriter(file, appendMode)) {
-            // Запись идентификатора в файл
-            writer.write("orderId: " + orderIdValue + System.lineSeparator());
-        } catch (IOException e) {
-            // Обработка ошибки записи
-            e.printStackTrace();
-        }
-    }
-
     // Получение текста ошибки
     public String getErrorMessageText() {
         if (error == null) {
