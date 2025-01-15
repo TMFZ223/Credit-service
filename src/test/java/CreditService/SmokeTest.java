@@ -25,6 +25,17 @@ class SmokeTest {
     }
 
     @Test
+    @Description("Просмотр тарифов для подачи заявки на кредит")
+    public void testGetTariffs() {
+        GetTariffsRequest getTariffsRequest = new GetTariffsRequest();
+        Response getCreditTariff = getTariffsRequest.sendGetTariffsRequest();
+        GetTariffResponse getTariffResponse = new GetTariffResponse(getCreditTariff);
+        expectedStatusCode = 200;
+        checkMethods.checkStatusCode(expectedStatusCode, getTariffResponse.getActualStatusCode());
+        checkMethods.checkFields(getTariffResponse.getTariffs(), "id", "type", "interestRate");
+    }
+
+    @Test
     @Description("Позитивный тест аутентификации")
     @DisplayName("Позетивный тест аутентификации")
     public void positiveTestAuthentication() {
@@ -40,7 +51,7 @@ class SmokeTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3})
     @Description("Параметризированный тест оформления заявки для существующего пользователя и существующих тарифов и просмотр статуса оформленных заявок")
-    @DisplayName("Параметризированный тест оформления заявки для существующего пользователя и существующих тарифов и просмотр статуса оформленных заявок")
+    @DisplayName("Параметризированный тест оформления заявки для существующего пользователя и существующих тарифов")
     public void testCreateOrderForDiferents(Integer tariffId) {
         authenticateBody.put("email", "ivanov@mail.ru");
         authenticateBody.put("password", "1234");
@@ -52,14 +63,29 @@ class SmokeTest {
         CreateOrderRequest createOrderRequest = new CreateOrderRequest();
         Response createOrder = createOrderRequest.sendCreateOrderRequest(orderBody, generatedToken); // Создание заявки
         CreateOrderResponse createOrderResponse = new CreateOrderResponse(createOrder);
-        String orderId = createOrderResponse.getOrderId();
+        createOrderResponse.writeOrderIdToFile();
+        expectedStatusCode = 200;
+        checkMethods.checkStatusCode(expectedStatusCode, createOrderResponse.getActualStatusCode());
+        checkMethods.checkFields(createOrderResponse.getDataAfterCreateOrder(), "orderId");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"3ca2d511-af3b-4604-bfce-b133f7761829", "d24b534e-a936-4cd5-b25d-a021f4fabccd", "7a0e678a-8ce6-4433-8cc3-c1185ecbf09f"})
+    // Идентификаторы из файла. При перезаписи файла нужно заменить текущие значения в тесте. Если тест проходить сразу, то ожидаемый статус заявки в прогрессе, через некоторое время нужно поменять на одобрено
+    @Description("Параметризованный тест просмотра статуса заявок. идентификаторы ранее записаны в файл")
+    public void testCheckOrderStatus(String orderId) {
+        authenticateBody.put("email", "ivanov@mail.ru");
+        authenticateBody.put("password", "1234");
+        Response loginResponse = authenticationRequest.sendAuthenticateRequest(authenticateBody); // Запрос на аутентификацию
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(loginResponse);
+        String generatedToken = authenticationResponse.getTokenValue();
         orderStatusParams.put("orderId", orderId);
- OrderStatusRequest orderStatusRequest = new OrderStatusRequest();
- Response getStatus = orderStatusRequest.sendGetOrderStatusRequest(orderStatusParams, generatedToken);
- OrderStatusResponse orderStatusResponse = new OrderStatusResponse(getStatus);
+        OrderStatusRequest orderStatusRequest = new OrderStatusRequest();
+        Response getStatus = orderStatusRequest.sendGetOrderStatusRequest(orderStatusParams, generatedToken);
+        OrderStatusResponse orderStatusResponse = new OrderStatusResponse(getStatus);
         expectedStatusCode = 200;
         checkMethods.checkStatusCode(expectedStatusCode, orderStatusResponse.getActualStatusCode());
- checkMethods.checkFields(orderStatusResponse.getDataAfterGetOrderStatus(), "orderStatus");
+        checkMethods.checkFields(orderStatusResponse.getDataAfterGetOrderStatus(), "orderStatus");
         checkMethods.checkText(orderStatusResponse.getOrderStatus(), "IN_PROGRESS");
     }
 }

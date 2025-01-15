@@ -38,9 +38,9 @@ public class RegressTest {
         checkMethods.checkStatusCode(expectedStatusCode, authenticationResponse.getActualStatusCode());
     }
 
-        @ParameterizedTest
+    @ParameterizedTest
     @CsvSource({"2, 1, 'Пользователь не найден'", "1, 4, 'Тариф не найден'"})
-    @Description("Параметризированный тест оформления заявки для несуществующего пользователя и не существующего тарифа")
+    @Description("Параметризированный тест оформления заявки для несуществующего пользователя и существующего тарифа, затем для существующего пользователя и не существующего тарифа")
     public void testCreateOrderForInvalidUserAndTariff(Integer userId, Integer tariffId, String errorMessage) {
         authenticateBody.put("email", "ivanov@mail.ru");
         authenticateBody.put("password", "1234");
@@ -49,10 +49,10 @@ public class RegressTest {
         Response loginResponse = authenticationRequest.sendAuthenticateRequest(authenticateBody); // Запрос на аутентификацию
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(loginResponse);
         String generatedToken = authenticationResponse.getTokenValue();
-CreateOrderRequest createOrderRequest = new CreateOrderRequest();
-      Response createOrder = createOrderRequest.sendCreateOrderRequest(orderBody, generatedToken);
-CreateOrderResponse createOrderResponse = new CreateOrderResponse(createOrder);
-                expectedStatusCode = 400;
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest();
+        Response createOrder = createOrderRequest.sendCreateOrderRequest(orderBody, generatedToken);
+        CreateOrderResponse createOrderResponse = new CreateOrderResponse(createOrder);
+        expectedStatusCode = 400;
         checkMethods.checkStatusCode(expectedStatusCode, createOrderResponse.getActualStatusCode());
         checkMethods.checkText(createOrderResponse.getErrorMessageText(), errorMessage);
     }
@@ -61,7 +61,7 @@ CreateOrderResponse createOrderResponse = new CreateOrderResponse(createOrder);
     @CsvSource({"'unknown_id', 'Заявка не найдена'"})
     @Description("Просмотр несуществующей заявки")
     @DisplayName("Просмотр несуществующей заявки")
-    public  void testInvalidOrderWatch(String orderId, String errorMessage) {
+    public void testInvalidOrderWatch(String orderId, String errorMessage) {
         authenticateBody.put("email", "ivanov@mail.ru");
         authenticateBody.put("password", "1234");
         Response loginResponse = authenticationRequest.sendAuthenticateRequest(authenticateBody);
@@ -72,6 +72,7 @@ CreateOrderResponse createOrderResponse = new CreateOrderResponse(createOrder);
         Response getStatus = orderStatusRequest.sendGetOrderStatusRequest(orderStatusParams, generatedToken);
         OrderStatusResponse orderStatusResponse = new OrderStatusResponse(getStatus);
         expectedStatusCode = 400;
+        checkMethods.checkStatusCode(expectedStatusCode, orderStatusResponse.getActualStatusCode());
         checkMethods.checkText(orderStatusResponse.getErrorMessageText(), errorMessage);
     }
 }

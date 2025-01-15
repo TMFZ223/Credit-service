@@ -1,7 +1,6 @@
 package CreditService;
-
 import io.qameta.allure.Step;
-import java.util.Map;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CheckMethods {
@@ -12,21 +11,20 @@ public class CheckMethods {
         assertEquals(expectedCode, actualCode);
     }
 
-    @Step("Убедиться в том, что в ответе присутствуют следующие непустые поля: {userFields}")
-    public void checkFields(Map<String, Object> data, String... userFields) {
-        for (String field : userFields) {
-            assertTrue(data.containsKey(field), "Поле " + field + " отсутствует в ответе");
-            assertNotNull(field, "Поле " + field + " пустое");
-        }
+    @Step("Убедиться в том, что в ответе присутствуют следующие поля: {userFields}")
+    public void checkFields(List<String> data, String... userFields) {
+            for (String field : userFields) {
+                assertTrue(data.contains(field), "Поле " + field + " отсутствует в ответе");
+                    }
     }
 
     @Step("Убедиться в том, что в ответе не существует следующих полей: {userFields}")
-    public void checkMissingFields(Map<String, Object> data, String... userFields) {
+    public void checkMissingFields(List<String> data, String... userFields) {
         if (data == null) {
             return;
         }
         for (String field : userFields) {
-            assertFalse(data.containsKey(field), "Поле " + field + " присутствует в ответе");
+            assertFalse(data.contains(field), "Поле " + field + " присутствует в ответе");
         }
     }
 
