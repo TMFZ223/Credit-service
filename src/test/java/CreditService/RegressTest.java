@@ -17,6 +17,7 @@ public class RegressTest {
     private Map<String, Object> authenticateBody = new HashMap<>(); // Тело запроса для аутентификации
     private Map<String, Object> orderBody = new HashMap<>(); // Тело запроса для подачи заявки
     private Map<String, Object> orderStatusParams = new HashMap<>(); // Query параметры для получения статуса заявки
+    private Map<String, Object> deleteOrderBody = new HashMap<>(); // Тело для запроса удаления заявки
     private int expectedStatusCode; // ожидаемый статус код
 
     public RegressTest() {
@@ -32,6 +33,19 @@ public class RegressTest {
         authenticateBody.put("email", "ivanov@mail.ru");
         authenticateBody.put("password", "1234");
         authenticateBody.remove(field);
+        Response loginResponse = authenticationRequest.sendAuthenticateRequest(authenticateBody);
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(loginResponse);
+        expectedStatusCode = 403;
+        checkMethods.checkStatusCode(expectedStatusCode, authenticationResponse.getActualStatusCode());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ivanovmail.ru", "ivanov@mailru", "ivanovmailru"})
+    @Description("Обработка некорректных значений электронной почты при аутентификации")
+    @DisplayName("Обработка некорректных значений электронной почты при аутентификации")
+    public  void  wrongEmeilValuesTest(String wrongEmail) {
+        authenticateBody.put("email", wrongEmail);
+                authenticateBody.put("password", "1234");
         Response loginResponse = authenticationRequest.sendAuthenticateRequest(authenticateBody);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(loginResponse);
         expectedStatusCode = 403;
@@ -76,4 +90,24 @@ public class RegressTest {
         checkMethods.checkStatusCode(expectedStatusCode, orderStatusResponse.getActualStatusCode());
         checkMethods.checkText( errorMessage, orderStatusResponse.getErrorMessageText());
     }
-}
+
+    @ParameterizedTest
+    @ValueSource(strings = {"aYZFErSQHWWnBOVUfVFu"})
+    @Description("Тест удаления несуществующей заявки")
+    @DisplayName("Тест удаления несуществующей заявки")
+    public void testDeleteInvalidOrder(String orderId) {
+        authenticateBody.put("email", "ivanov@mail.ru");
+        authenticateBody.put("password", "1234");
+        Response loginResponse = authenticationRequest.sendAuthenticateRequest(authenticateBody); // Запрос на аутентификацию
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(loginResponse);
+        String generatedToken = authenticationResponse.getTokenValue();
+        deleteOrderBody.put("userId", 1);
+        deleteOrderBody.put("orderId", orderId);
+        DeleteOrderRequest deleteOrderRequest = new DeleteOrderRequest();
+        Response deleteOrder = deleteOrderRequest.sendDeleteOrderRequest(deleteOrderBody, generatedToken);
+        DeleteOrderResponse deleteOrderResponse = new DeleteOrderResponse(deleteOrder);
+        expectedStatusCode = 400;
+                checkMethods.checkStatusCode(expectedStatusCode, deleteOrderResponse.getActualStatusCode());
+                checkMethods.checkText("Заявка не найдена", deleteOrderResponse.getErrorMessageText());
+    }
+    }
